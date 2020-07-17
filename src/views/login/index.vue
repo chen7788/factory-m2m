@@ -1,11 +1,12 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" :style="node">
+    <div class="background">
+      <img src="@/assets/images/login_beijing.jpg" alt="beijing" style="width:100%;height:100%">
+    </div>
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
       <div class="title-container">
         <h3 class="title">Login Form</h3>
       </div>
-
       <el-form-item prop="username">
         <span class="svg-container">
           <svg-icon icon-class="user" />
@@ -83,7 +84,7 @@ export default {
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
     }
   },
   watch: {
@@ -152,7 +153,7 @@ $cursor: #fff;
       -webkit-appearance: none;
       border-radius: 0px;
       padding: 12px 5px 12px 15px;
-      color: $light_gray;
+      color: black;
       height: 47px;
       caret-color: $cursor;
 
@@ -165,9 +166,10 @@ $cursor: #fff;
 
   .el-form-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
+    background:white;
     border-radius: 5px;
-    color: #454545;
+    color:white;
+    opacity: 0.7;
   }
 }
 </style>
@@ -180,16 +182,29 @@ $light_gray:#eee;
 .login-container {
   min-height: 100%;
   width: 100%;
-  background-color: $bg;
   overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  display: flex;
 
+
+  .background{
+    z-index: -1;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
   .login-form {
     position: relative;
-    width: 520px;
-    max-width: 100%;
-    padding: 160px 35px 0;
-    margin: 0 auto;
+    min-width: 520px;
+    height: 320px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 20px;
     overflow: hidden;
+    background-color:rgba(255, 255, 255, 0.4);
   }
 
   .tips {
@@ -217,8 +232,8 @@ $light_gray:#eee;
 
     .title {
       font-size: 26px;
-      color: $light_gray;
-      margin: 0px auto 40px auto;
+      color: black;
+      margin: 0px auto 20px auto;
       text-align: center;
       font-weight: bold;
     }

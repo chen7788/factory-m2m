@@ -17,11 +17,11 @@ export default {
     },
     width: {
       type: String,
-      default: '100%'
+      default: '95%'
     },
     height: {
       type: String,
-      default: '225px'
+      default: '240px'
     }
   },
   data() {
@@ -55,6 +55,7 @@ export default {
             fontSize:'17'
           }
         },
+        radius: ['50%', '70%'],
         tooltip: {
           trigger: 'axis',
           axisPointer: { // 坐标轴指示器，坐标轴触发有效
@@ -65,12 +66,15 @@ export default {
         // shape: 'circle',
         name: {
             textStyle: {
-                color: '#fff',
-                backgroundColor: '#999',
+                color: '#333',
                 borderRadius: 3,
-                padding: [3, 5]
+                padding: [0, 5]
             }
         },
+          label:{
+            position:['20%','30%'],
+            distance:'10'
+          },
         indicator: [
             { name: '销售（sales）', max: 6500},
             { name: '管理（Administration）', max: 16000},

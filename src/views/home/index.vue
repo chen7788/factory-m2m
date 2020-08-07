@@ -1,6 +1,6 @@
 <template>
         <el-card>
-            <el-col class="left-container">
+            <el-col class="home-left-container">
                 <el-row class="left-pieChart-container">
                     <el-col :span="12">
                         <div class="pieChart-wrapper">
@@ -99,7 +99,7 @@
               <div class="divider-horizontal"></div>
               <el-table :data="tableData" style="height: 275px;width: 90%;margin-left: 10px;position: relative;margin-top: 10px" class="right-table-container">
                 <el-table-column>
-                  <template slot-scope="scope">
+                  <template #default="scope">
                     <i class="el-icon-info"/>
                     <span style="margin-left: 10px">{{ scope.row.value}}</span>
                   </template>
@@ -174,7 +174,7 @@ export default {
 }
 </style>
 <style scope>
-.left-container{
+.home-left-container{
     width: 50%;
     height: 100%;
     position: relative;
@@ -182,7 +182,7 @@ export default {
 .right-container{
     height: 100%;
     width: 50%;
-    padding-left: 45px;
+    padding-left: 20px;
     float: right;
     position: relative;
 }
@@ -198,7 +198,7 @@ export default {
     text-align: center;
 }
 .raddarChart-wrapper{
-    height: 250px;
+    height: 240px;
     width: 100%;
     position: relative;
     float: right;

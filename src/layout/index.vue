@@ -1,10 +1,11 @@
 <template>
   <div :class="classObj" class="app-wrapper">
     <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside" />
-    <sidebar class="sidebar-container" />
+    <sidebar class="sidebar-container"/>
     <div class="main-container">
       <div :class="{'fixed-header':fixedHeader}">
         <navbar />
+        <tags-view v-if="needTagsView" />
       </div>
       <app-main />
     </div>
@@ -12,7 +13,7 @@
 </template>
 
 <script>
-import { Navbar, Sidebar, AppMain } from './components'
+import { Navbar, Sidebar, AppMain, TagsView } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 
 export default {
@@ -20,7 +21,8 @@ export default {
   components: {
     Navbar,
     Sidebar,
-    AppMain
+    AppMain,
+    TagsView
   },
   mixins: [ResizeMixin],
   computed: {
@@ -32,6 +34,9 @@ export default {
     },
     fixedHeader() {
       return this.$store.state.settings.fixedHeader
+    },
+    needTagsView(){
+      return this.$store.state.settings.tagsView
     },
     classObj() {
       return {
@@ -59,6 +64,7 @@ export default {
     position: relative;
     height: 100%;
     width: 100%;
+    background-color: rgba(240,242,245,1);
     &.mobile.openSidebar{
       position: fixed;
       top: 0;
@@ -71,7 +77,6 @@ export default {
     top: 0;
     height: 100%;
     position: absolute;
-    z-index: 999;
   }
 
   .fixed-header {
@@ -84,10 +89,11 @@ export default {
   }
 
   .hideSidebar .fixed-header {
-    width: calc(100% - 54px)
+    width: calc(100% - #{$sideBarMinWidth})
   }
 
   .mobile .fixed-header {
     width: 100%;
   }
+
 </style>

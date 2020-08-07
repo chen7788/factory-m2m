@@ -16,35 +16,35 @@ router.beforeEach(async(to, from, next) => {
 
   // set page title
   document.title = getPageTitle(to.meta.title)
-
+  store.dispatch('user/changeMenuLink',to.path).then(() => {
+    console.log(to.path)
+  })
   // determine whether the user has logged in
   const hasToken = getToken()
-
   if (hasToken) {
     if (to.path === '/login') {
       // if is logged in, redirect to the home page
       next({ path: '/' })
       NProgress.done()
     } else {
-      const hasGetUserInfo = store.getters.name
-      if (hasGetUserInfo) {
+      const menu = store.getters.menu && store.getters.menu.length > 0
+      if (menu){
         next()
-      } else {
-        try {
-          // get user info
-          await store.dispatch('user/getInfo')
-
-          next()
-        } catch (error) {
-          // remove token and go to login page to re-login
-          await store.dispatch('user/resetToken')
-          Message.error(error || 'Has Error')
-          next(`/login?redirect=${to.path}`)
-          NProgress.done()
-        }
+      }else{
+        store.dispatch('user/ChangeMenu').then( res => {
+          store.dispatch('GenerateRoutes',{res}).then(() => {
+              router.addRoutes(store.getters.addRouters) // 动态添加可访问路由表
+            next({ ...to, replace: true })
+          })
+        }).catch( (err) => {
+          store.dispatch('/user/FedLogOut').then(() => {
+            Message.error(err || 'Verification failed, please login again')
+            next({ path: '/' })
+          })
+        })
       }
-    }
-  } else {
+      }
+  }else {
     /* has no token*/
 
     if (whiteList.indexOf(to.path) !== -1) {

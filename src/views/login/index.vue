@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container" :style="node">
+  <div class="login-container">
     <div class="background">
       <img src="@/assets/images/login_beijing.jpg" alt="beijing" style="width:100%;height:100%">
     </div>
@@ -76,7 +76,7 @@ export default {
     return {
       loginForm: {
         username: 'admin',
-        password: '111111'
+        password: '123456'
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],

@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import request from "@/utils/request";
 
 export function login(data) {
   return request({
@@ -22,3 +22,10 @@ export function logout() {
     method: 'post'
   })
 }
+export function getNavMenuList() {
+  return request({
+    url: '/menu/getNavMenuList',
+    method: 'get'
+  })
+}
+

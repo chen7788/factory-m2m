@@ -8,9 +8,9 @@ const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + requesb url
   withCredentials:false,// 允许携带cookie
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 5000, // request timeout
+  timeout: 50000, // request timeout
   headers: {
-    "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+    "Content-Type": "Content-Type: application/json",// form-data "application/x-www-form-urlencoded;charset=utf-8"
   }
 })
 
@@ -51,6 +51,17 @@ service.interceptors.response.use(
     const res = response.data
         // if the custom code is not 20000, it is judged as an error.
     if (res.status !== 200) {
+      if (res.status === 401){
+        MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
+          confirmButtonText: 'Re-Login',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        }).then(() => {
+          store.dispatch('user/resetToken').then(() => {
+            location.reload()
+          })
+        })
+      }
       Message({
         message: res.message || 'Error',
         type: 'error',

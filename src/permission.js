@@ -5,6 +5,8 @@ import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
+import el from "element-ui/src/locale/lang/el";
+import de from "element-ui/src/locale/lang/de";
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -16,7 +18,14 @@ router.beforeEach(async(to, from, next) => {
 
   // set page title
   document.title = getPageTitle(to.meta.title)
-  store.dispatch('user/changeMenuLink',to.path).then(() => {
+  let temp = to.path.split('/')
+  let tempPath=''
+  if (temp[temp.length-1].indexOf('/') != -1){
+    tempPath = temp[temp.length-1]
+  }else{
+    tempPath = '/'+temp[temp.length-1]
+  }
+  store.dispatch('user/changeMenuLink',tempPath).then(() => {
     console.log(to.path)
   })
   // determine whether the user has logged in
@@ -37,9 +46,13 @@ router.beforeEach(async(to, from, next) => {
             next({ ...to, replace: true })
           })
         }).catch( (err) => {
-          store.dispatch('/user/FedLogOut').then(() => {
+          next({ path: '/login' })
+          store.dispatch('user/FedLogOut').then(() => {
             Message.error(err || 'Verification failed, please login again')
-            next({ path: '/' })
+
+          }).catch(err => {
+            debugger
+            console.log(err)
           })
         })
       }

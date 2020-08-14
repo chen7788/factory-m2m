@@ -63,9 +63,9 @@ export const constantRouterMap = [
     hidden: true
   },
   {
-    path: '/home',
+    path: '/',
     component: Layout,
-    redirect: '/home',
+    redirect:'/home',
     children: [{
       path: 'home',
       name: 'Home',
@@ -76,7 +76,7 @@ export const constantRouterMap = [
 ]
 export const asyncRouterMap = [
   {
-    path: '#',
+    path: '/setting',
     component: Layout,
     redirect: 'noredirect',
     alwaysShow: true,
@@ -87,18 +87,27 @@ export const asyncRouterMap = [
     },
     children: [
       {
-        path: '/role',
+        path: 'role',
         component: () => import('@/views/setting/role/index'),
         name: '角色管理',
         meta: {
           title: '角色管理', icon: 'dashboard',
           noCache: true
         }
+      },
+      {
+        path: 'topology',
+        component: () => import('@/views/setting//topology/index'),
+        name: '拓扑管理',
+        meta: {
+          title: '拓扑管理', icon: 'dashboard',
+          noCache: true
+        }
       }
     ]
   },
   {
-    path: '#',
+    path: '/information',
     component: Layout,
     redirect: 'noredirect',
     alwaysShow: true,
@@ -109,7 +118,7 @@ export const asyncRouterMap = [
     },
     children: [
       {
-        path: '/customer',
+        path: 'customer',
         component: () => import('@/views/information/index'),
         name: '客户资料',
         meta: {

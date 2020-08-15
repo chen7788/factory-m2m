@@ -1,7 +1,7 @@
 <template>
     <div class="potology-container">
       <el-col :span="9">
-        <el-card>
+        <el-card shadow="never" >
           <div slot="header">
             <span>物业管理</span>
             <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
@@ -38,11 +38,11 @@
         </div>
       </el-col>
       <el-col :span="9">
-        <el-card>
+        <el-card shadow="never">
           <div slot="header">
             <span>设备管理</span>
           </div>
-          <el-tree
+          <el-tree class="el-tree-container"
             v-loading="rightLoading"
             element-loading-text="拼命加载中"
             element-loading-spinner="el-icon-loading"
@@ -111,32 +111,43 @@
         },
           findNode(data,bind){
           let  arr = []
-            data.forEach(item => {
-            if (item.uuid === bind.orgId){
-              let dd = Object.assign({},bind)
-              dd['propertytyName'] = dd.deviceMacAddress
-              arr.push(dd)
-              item['Subdirectory'] = arr
-              return
-            }else {
-              if (item.hasOwnProperty("Subdirectory") && item.Subdirectory.length > 0){
-                this.findNode(item.Subdirectory,bind)
+            for (let item of data){
+              if (item.uuid === bind.orgId){
+                let dd = Object.assign({},bind)
+                dd['propertytyName'] = dd.deviceMacAddress
+                arr.push(dd)
+                item['Subdirectory'] = arr
+                break
+              }else {
+                if (item.hasOwnProperty("Subdirectory") && item.Subdirectory.length > 0){
+                  let model = this.findNode(item.Subdirectory,bind)
+                  if (typeof(model) !== "undefined" && model !== null){
+                    return model
+                  }
+
+                }
               }
             }
-          })
           }
       }
     }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
   .potology-container{
     height: 100%;
     position: relative;
     background-color:rgba(240,242,245,1);
   }
   .el-tree-container{
-    height: calc(100vh - 100px);
+    height: calc(100vh - 190px);
+    overflow-y: scroll;
+  }
+  .potology-container{
+    .el-card{
+      margin-top: 5px;
+      height: 100%;
+    }
   }
 
 </style>

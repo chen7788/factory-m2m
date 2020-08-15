@@ -78,7 +78,7 @@
               <div style="width: 120px;float: left;margin-left: 20px;margin-top: 12px;font-size: 15px">
                 {{selectedValue | selectedValueFilter}}
               </div>
-              <pagination :total="total" :page.sync="page" :limit.sync="limit" @pagination="handlePagination" layout="prev, pager, next, sizes" background="false"/>
+              <pagination :total="total" :page.sync="page" :limit.sync="limit" @pagination="handlePagination" layout="prev, pager, next, sizes" background=false />
               <div align="center" style="float: right;margin-right: 5px;margin-top: 12px;font-size: 15px">
                 {{total | totalFilter(limit)}}
               </div>
@@ -110,7 +110,7 @@
           <div style="width: 120px;float: left;margin-left: 20px;margin-top: 12px;font-size: 15px">
             {{selectedValue | selectedValueFilter}}
           </div>
-          <pagination :total="total" :page.sync="page" :limit.sync="limit" @pagination="handlePagination" layout="prev, pager, next, sizes" background="false"/>
+          <pagination :total="total" :page.sync="page" :limit.sync="limit" @pagination="handlePagination" layout="prev, pager, next, sizes" background=false />
           <div align="center" style="float: right;margin-right: 5px;margin-top: 12px;font-size: 15px">
             {{total | totalFilter(limit)}}
           </div>

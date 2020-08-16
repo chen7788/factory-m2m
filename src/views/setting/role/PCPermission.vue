@@ -344,7 +344,7 @@
       margin-right: 10px;
     }
   }
-  ::v-deep .cell{
+  ::v-deep {
     .el-icon-arrow-right:before{
       content: '+';
       display: inline-block;

@@ -1,6 +1,8 @@
 import request from "@/utils/request";
+import { setContentType } from '@/utils/auth'
 
 export function login(data) {
+  setContentType(true)
   return request({
     url: '/user/login',
     method: 'post',

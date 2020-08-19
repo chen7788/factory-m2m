@@ -65,7 +65,7 @@
 </template>
 
 <script>
-  import { getTree, getMenuList} from "@/api/userManger";
+  import { getTree, getMenuList, getMenuPermission} from "@/api/userManger";
   import pagination from '@/components/Pagination'
 
     export default {
@@ -105,11 +105,6 @@
       },
       computed:{
 
-      },
-      watch:{
-        tableData(){
-
-        }
       },
       methods:{
         handleCheckboxChange(isSelected,data,index){
@@ -291,6 +286,12 @@
             this.treeLoading = false
             let data = JSON.parse(response.result)
             this.treeData = data
+          })
+        },
+        menuPermission(){
+          getMenuPermission(this.page,this.size).then(response => {
+            this.findNode(response.result.data)
+            this.tableData = response.result.data
           })
         },
         menuList(){

@@ -65,3 +65,10 @@ export function getMenuList(page,size) {
     params:{page:page,size:size}
   })
 }
+export function getMenuPermission(roleId,type) {
+  return request({
+    url: '/rolePermissions/getMenuPermissions',
+    method: 'get',
+    params:{'roleId':roleId,'menuType':type}
+  })
+}

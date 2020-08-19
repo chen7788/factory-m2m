@@ -1,5 +1,5 @@
 import request from "@/utils/request";
-
+import { setContentType } from '@/utils/auth'
 export function leftTreeData() {
   return request({
     url: '/propertyty/show',
@@ -19,9 +19,24 @@ export function allBinds() {
   })
 }
 export function bindNode(orgids,deviceNodeIds) {
+  setContentType(false)
+  let para = new FormData()
+  para.append('orgIds',orgids)
+  para.append('deviceNodeIds',deviceNodeIds)
   return request({
     url: '/organddevicenode/bind',
     method: 'post',
-    data:{'orgids':orgids,'deviceNodeIds':deviceNodeIds}
+    data:para
+  })
+}
+export function unbindNode(orgId,deviceNodeId) {
+  setContentType(false)
+  let para = new FormData()
+  para.append('orgId',orgId)
+  para.append('deviceNodeId',deviceNodeId)
+  return request({
+    url: '/organddevicenode/unbind',
+    method: 'post',
+    data:para
   })
 }

@@ -97,10 +97,19 @@ export const asyncRouterMap = [
       },
       {
         path: 'topology',
-        component: () => import('@/views/setting//topology/index'),
+        component: () => import('@/views/setting/topology/index'),
         name: '拓扑管理',
         meta: {
           title: '拓扑管理', icon: 'dashboard',
+          noCache: true
+        }
+      },
+      {
+        path: 'menus',
+        component: () => import('@/views/setting/menus/index'),
+        name: '菜单管理',
+        meta: {
+          title: '菜单管理', icon: 'dashboard',
           noCache: true
         }
       }

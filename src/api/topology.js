@@ -20,23 +20,50 @@ export function allBinds() {
 }
 export function bindNode(orgids,deviceNodeIds) {
   setContentType(false)
-  let para = new FormData()
-  para.append('orgIds',orgids)
-  para.append('deviceNodeIds',deviceNodeIds)
   return request({
     url: '/organddevicenode/bind',
     method: 'post',
-    data:para
+    data:{orgIds: orgids, deviceNodeIds: deviceNodeIds}
   })
 }
 export function unbindNode(orgId,deviceNodeId) {
   setContentType(false)
-  let para = new FormData()
-  para.append('orgId',orgId)
-  para.append('deviceNodeId',deviceNodeId)
+  // let para = new FormData()
+   let data =''
+  // para.append(orgId,orgId)
+  if (typeof(deviceNodeId) !== "undefined"){
+    //para.append('deviceNodeId',deviceNodeId)
+    data = {orgId: orgId, deviceNodeId: deviceNodeId}
+  }else {
+    data = {'orgId': orgId}
+  }
   return request({
     url: '/organddevicenode/unbind',
     method: 'post',
-    data:para
+    data:data
+  })
+}
+export function addNode(name,remark,sort,parent) {
+  setContentType(false)
+  return request({
+    url: '/propertyty/save',
+    method: 'post',
+    data:{propertytyName: name, remarks: remark,id,sortNumber:sort,parentNode:parent}
+  })
+}
+export function upDateNode(name,remark,sort,id,parent) {
+  setContentType(false)
+  return request({
+    url: '/propertyty/update',
+    method: 'post',
+    data:{propertytyName: name, remarks: remark,sortNumber:sort,id:id,parentNode:parent}
+  })
+}
+export function deleteNode(uuid) {
+  setContentType(false)
+  return request({
+    url: '/propertyty/delete',
+    method: 'post',
+    data:{uuid:uuid}
   })
 }

@@ -14,8 +14,7 @@ import router from './router'
 import '@/icons' // icon
 import 'ant-design-vue/dist/antd.css';
 import '@/permission' // permission control
-import {Tree,Icon} from 'ant-design-vue'
-import VueContextMenu from '@xunlei/vue-context-menu'
+import {Tree,Icon,Tabs} from 'ant-design-vue'
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
@@ -35,7 +34,7 @@ if (process.env.NODE_ENV === 'production') {
  Vue.use(ElementUI)
 Vue.use(Tree)
 Vue.component(Icon.name,Icon)
-Vue.use(VueContextMenu)
+Vue.use(Tabs)
 Vue.config.productionTip = false
 
 new Vue({

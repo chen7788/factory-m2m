@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
+import {formDataWithData} from './index'
 import { getToken, getContentType } from '@/utils/auth'
 
 
@@ -11,9 +12,9 @@ const service = axios.create({
   withCredentials:false,// 允许携带cookie
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 50000, // request timeout
-  // headers: {
-  //   "Content-Type": "Content-Type: application/json",// form-data "application/x-www-form-urlencoded;charset=utf-8"
-  // }
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',// form-data "application/x-www-form-urlencoded;charset=utf-8"
+  }
 })
 // request interceptor
 service.interceptors.request.use(
@@ -26,7 +27,11 @@ service.interceptors.request.use(
       // please modify it according to the actual situation
       config.headers['Token'] = getToken(),
         config.headers['requestPage'] = store.getters.menuLink
-      config.headers['Content-Type'] = getContentType()
+      //config.headers['Content-Type'] = getContentType()
+    }
+    if (getContentType() === 'application/x-www-form-urlencoded'){
+      let data = formDataWithData(config.data)
+      config.data = data
     }
     return config
   },
@@ -36,6 +41,8 @@ service.interceptors.request.use(
     return Promise.reject(error)
   }
 )
+
+
 
 // response interceptor
 service.interceptors.response.use(

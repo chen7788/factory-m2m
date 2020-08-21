@@ -1,5 +1,5 @@
 <template>
-    <div class="potology-container">
+    <div v-cloak class="potology-container">
 
       <el-col :span="9">
         <el-card shadow="never" >
@@ -42,7 +42,13 @@
             </span>
         </span>
               </el-tree>
-
+            <div  class=rightClickMenu v-show="isRightClick"  ref="rightClick"  transiton="fade" v-clickoutside="handleClose">
+              <ul style="list-style: none">
+                <li @click="addNode"><i class="el-icon-plus"></i> 添加子节点</li>
+                <li @click="editNode"><i class="el-icon-edit"></i> 修改节点</li>
+                <li v-show="isShowDeleteNode" @click="deleteNode"><i class="el-icon-delete"></i> 删除节点</li>
+              </ul>
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -92,28 +98,59 @@
           </div>
         </el-card>
       </el-col>
-      <context-menu class="right-menu"
-                    :target="contextMenuTarget"
-                    :show="contextMenuVisible"
-                    @update:show="(show) => contextMenuVisible = show">
-        <span>
-          <i class="el-icon-plus"  style="color: #20a0ff"/>
-          dddddd
+<!--      添加子节点-->
+      <el-dialog class="add-leaf-dialog" :title="addDialogTitle" :visible.sync="addDialogVisible" width="50%">
+        <el-divider></el-divider>
+        <el-form :rules="addRules" v-model="addForm" label-position="left">
+          <el-form-item label="父节点：">
+            <el-input v-model="addForm.leaf" :disabled="inputDisabled" placeholder="请输入模块名称"/>
+          </el-form-item>
+          <el-form-item label="节点名称：" prop="name">
+            <el-input v-model="addForm.name" placeholder="请输入模块名称"/>
+          </el-form-item>
+          <el-form-item label="备注：" prop="desc">
+            <el-input type="textarea" v-model="addForm.desc" placeholder="请输入模块名称"/>
+          </el-form-item>
+          <el-form-item label="显示顺序：" prop="sort">
+            <el-input-number v-model="addForm.sort" controls-position="right" :min="0" :max="9000" @change="handleChange"/>
+          </el-form-item>
+
+        </el-form>
+        <el-divider></el-divider>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="addDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="addDialogClick">确 定</el-button>
         </span>
-        <span>
-          <i class="el-icon-edit"  style="color: #20a0ff"/>
-          dddddd
+      </el-dialog>
+      <!--      设备关联-->
+      <el-dialog class="connect-dialog" :title="connectDialogTitle" :visible.sync="connectDialogVisible" width="50%">
+        <el-divider></el-divider>
+        <el-table ref="multipleTable"
+                  :data="tableData"
+                  style="width: 100%;margin-bottom: 20px;"
+                  row-key="id"
+                  border>
+          <el-table-column align="center"
+                           prop="name"
+                           label="物业节点名称">
+          </el-table-column>
+          <el-table-column align="center"
+                           prop="device"
+                           label="关联设备">
+          </el-table-column>
+
+        </el-table>
+        <el-divider></el-divider>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="addDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="addDialogClick">确 定</el-button>
         </span>
-        <span>
-          <i class="el-icon-delete"  style="color: #20a0ff"/>
-          dddddd
-        </span>
-      </context-menu>
+      </el-dialog>
     </div>
 </template>
 
 <script>
-  import { leftTreeData, deviceTreeData, allBinds, bindNode, unbindNode} from '@/api/topology'
+  import { leftTreeData, deviceTreeData, allBinds, bindNode, unbindNode, addNode, upDateNode, deleteNode} from '@/api/topology'
   import ScrollPane from "@/layout/components/TagsView/ScrollPane";
     export default {
       components: {ScrollPane},
@@ -143,12 +180,49 @@
           unBindStatus:true,
           leftLoadingText:'',
           rightLoadingText:'',
+          isRightClick:false,
+          isShowDeleteNode:true,
+          addDialogVisible:false,
           leftClickData:null,
-          rightClickData:null,
-          defaultExpandAll:true,
-          icon:'el-icon-menu',
-          contextMenuVisible:false,
-          contextMenuTarget:null
+          addDialogTitle:'',
+          tableData:[],
+          addForm:{
+            leaf:'',
+            name:'',
+            desc:'',
+            sort:999
+          },
+          inputDisabled:true,
+          connectDialogVisible:false,
+          connectDialogTitle:'dfff',
+          addRules:{
+            name:[
+              { required: true, message: '请输入活动名称', trigger: 'blur' },
+              { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+            ],
+            sort:[{ required: true, message: '请输入活动名称', trigger: 'blur' }],
+          }
+        }
+      },
+      //    自定义指令clickoutside绑定了一个函数handleClose用来关闭菜单
+      directives:{
+        clickoutside:{
+          bind:function(el,binding,vnode){
+            function documentHandler(e){
+              if(el.contains(e.target)){
+                return false;
+              }
+              if(binding.expression){
+                binding.value(e)
+              }
+            }
+            el._vueClickOutside_ = documentHandler;
+            document.addEventListener('click',documentHandler);
+          },
+          unbind:function(el,binding){
+            document.removeEventListener('click',el._vueClickOutside_);
+            delete el._vueClickOutside_;
+          }
         }
       },
       computed:{
@@ -158,109 +232,192 @@
           }
           return 'el-icon-plus'
         },
-        contextMenuTarget(){
-          return this.$refs.headerButton
-        }
       },
       created() {
         this.getAllBinds()
       },
-      // mounted() {
-      //   this.$nextTick(() => {
-      //     // vue-context-menu 需要传入一个触发右键事件的元素，等页面 dom 渲染完毕后才可获取
-      //     this.contextMenuTarget = document.querySelector('.')
-      //     // 获取所有的 treeitem，循环监听右键事件
-      //     const tree = document.querySelectorAll('#el-tree [role="treeitem"]')
-      //     tree.forEach(i => {
-      //       i.addEventListener('contextmenu',event => {
-      //         // 如果右键了，则模拟点击这个treeitem
-      //         event.target.click()
-      //       })
-      //     })
-      //   })
-      // },
       methods:{
+        addNode(){
+          this.addDialogTitle = '添加物业节点'
+          this.addDialogVisible = true
+          this.isRightClick = false
+          this.addForm.leaf = this.leftClickData.propertytyName
+        },
+        addDialogClick(){
+          if (this.addForm.leaf === this.leftClickData.propertytyName){
+            addNode(this.addForm.name,this.addForm.desc,this.addForm.sort,this.leftClickData.parentNode).then(response => {
+              this.addDialogVisible = false
+              this.$message({
+                message:'添加节点成功',
+                type:'success'
+              })
+              this.getAllBinds()
+            }).catch(err => {
+              this.$message({
+                message:err.message,
+                type:'error'
+              })
+            })
+          }else {
+            upDateNode(this.addForm.name,this.addForm.desc,this.addForm.sort,this.leftClickData.id,this.leftClickData.parentNode).then(response => {
+              this.addDialogVisible = false
+              this.$message({
+                message:'修改节点成功',
+                type:'success'
+              })
+              this.getAllBinds()
+            }).catch(err => {
+              this.$message({
+                message:err.message,
+                type:'error'
+              })
+            })
+          }
+
+        },
+        editNode(){
+          this.addDialogTitle = '修改物业节点'
+          this.addDialogVisible = true
+          this.isRightClick = false
+          this.addForm.name = this.leftClickData.propertytyName
+          this.addForm.desc = this.leftClickData.remarks
+          this.addForm.sort = this.leftClickData.sortNumber
+        },
+        deleteNode(){
+          this.$confirm('确定删除, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            deleteNode(this.leftClickData.uuid).then(response => {
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+              this.getAllBinds()
+            })
+
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });
+          });
+        },
+        // 下拉菜单
+        handleClose(){
+          this.isRightClick = false;
+        },
         handleLeftNodeContextmenu(event,data,node,obj){
-          this.contextMenuVisible = true
+          if (data.deviceMacAddress){
+            return
+          }
+          this.isRightClick = true
+          this.$refs.rightClick.style.left = event.x-90 +'px'
+          this.$refs.rightClick.style.top = event.y-80 +'px'
+          const boxPosition = this.$refs.rightClick.getBoundingClientRect();
+          const boxPositionTop = boxPosition.bottom;
+          this.getScreenSize(event,boxPositionTop);
+          this.leftClickData = data
+          this.addForm.leaf = node.parent.data.propertytyName
+
         },
         handleLeftNodeClick(data,node,obj){
-          this.leftClickData  = Object.assign({},data)
          this.changeUnbindStatus(data)
         },
+        //获取body高度以及设置元素在页面中的位置
+        getScreenSize(val,boxPositionTop) {
+          var count= document.body.offsetHeight;
+          var countY = count - boxPositionTop;
+          if (countY <20){
+            this.$refs.rightClick.style.top = val.y - 150 +'px';
+          }
+        },
         handleRightNodeClick(data,node,obj){
-          this.rightClickData  = Object.assign({},data)
+          let leftData = this.$refs.leftTree.getCurrentNode()
           if (!data.hasOwnProperty("orgId")){
-            if (this.leftClickData !== null){
+            if (leftData !== null){
               if (this.bindStatus){
                 this.bindStatus = false
               }
             }
           }
-          if (this.leftClickData === null){
+          if (leftData === null){
             if (!this.bindStatus){
               this.bindStatus = true
             }
           }
         },
         handleBind(){
-          //let orgIds = new Array()
-          //this.findBindData(this.rightClickData,orgIds)
-          bindNode(this.leftClickData.uuid,this.rightClickData.id).then(response => {
+          let leftData = this.$refs.leftTree.getCurrentNode()
+          let rightData = this.$refs.rightTree.getCurrentNode()
+          bindNode(leftData.uuid,rightData.id).then(response => {
+            this.$message({
+              message:'绑定成功',
+              type:'success'
+            })
             this.getAllBinds()
-            alert(response)
           }).catch(err => {
-            alert(err)
+            this.$message({
+              message:err.message,
+              type:'error'
+            })
           })
         },
-        // findBindData(data,orgIds){
-        //   if (Array.isArray(data)&&data.length>0){
-        //     data.forEach(item => {
-        //       if (item.icon !== 'el-icon-video-play'){
-        //         orgIds.push(item.id)
-        //       }
-        //       if (item.hasOwnProperty("children") && item.children.length > 0) {
-        //         this.findBindData(item.children,orgIds)
-        //       }
-        //     })
-        //   }else {
-        //     orgIds.push(data.id)
-        //     if (data.hasOwnProperty("children") && data.children.length > 0) {
-        //       this.findBindData(data.children,orgIds)
-        //     }
-        //   }
-        //
-        // },
+
         handleUnbind(){
-         let item = this.findUnbindData(this.data2,this.leftClickData.deviceNodeId)
-          debugger
-          unbindNode(this.leftClickData.orgId,item.id).then(response => {
-            alert(response)
+          let leftData = this.$refs.leftTree.getCurrentNode()
+          let uuid = null
+          if (leftData.uuid){
+            uuid = leftData.uuid
+          }else {
+            uuid = leftData.orgId
+          }
+          unbindNode(uuid,leftData.deviceNodeId).then(response => {
+            this.$message({
+              message:'解绑成功',
+              type:'success'
+            })
             this.getAllBinds()
           }).catch(err => {
-            alert(err)
+            this.$message({
+              message:err.message,
+              type:'error'
+            })
           })
-        },
-        findUnbindData(data,id){
-          for (let item of data) {
-            if (item.id === id){
-              return item
-            }
-            if (item.hasOwnProperty("children") && item.children.length > 0) {
-              let model =  this.findUnbindData(item.children,id)
-              if (typeof(model) !== "undefined"){
-                return model
-              }
-            }
-          }
         },
         handleProperty(){
-
+          let data = this.data.slice()
+          let arr = []
+          this.tableData = this.findDialogData(data,arr)
+          this.connectDialogVisible = true
+        },
+        findDialogData(data,arr){
+          debugger
+          for (let item of data) {
+            let model = new  Object()
+            if (item.uuid){
+              model.name = item.propertytyName
+            }else {
+              model.name = '',
+                model.device = item.deviceMacAddress
+            }
+            arr.push(model)
+            if (item.hasOwnProperty("Subdirectory") && item.Subdirectory.length > 0){
+              this.findDialogData(item.Subdirectory)
+            }
+          }
         },
         handleDevice(){
 
         },
         //设置解绑按钮状态
         changeUnbindStatus(data){
+          if (data == null){
+            this.unBindStatus = true
+            this.bindStatus = true
+            return
+          }
           if (data.hasOwnProperty('orgId')){
             if (this.unBindStatus){
               this.unBindStatus = !this.unBindStatus
@@ -268,7 +425,6 @@
             if (!this.bindStatus){
               this.bindStatus = true
             }
-            this.rightClickData = []
               this.$refs.rightTree.setCurrentKey(data.deviceNodeId)
           }else {
             if (data.hasOwnProperty("Subdirectory") && data.Subdirectory.length > 0){
@@ -287,7 +443,8 @@
                 this.unBindStatus = !this.unBindStatus
               }
             }
-            if (this.rightClickData !== null){
+            let rightData = this.$refs.rightTree.getCurrentNode()
+            if (rightData !== null){
               this.bindStatus = false
             }
           }
@@ -355,9 +512,6 @@
             }
             if (item.hasOwnProperty("children") && item.children.length > 0){
               let model = this.traverseRightTreeData(item.children,bind)
-              // if (typeof(model) !== "undefined" && model !== null){
-              //   return model
-              // }
             }
           }
         },
@@ -372,7 +526,7 @@
                 dd.slots = slot
                 dd.icon='el-icon-video-play'
                 if (item.hasOwnProperty("Subdirectory") && item.Subdirectory.length > 0){
-                  item.Subdirectory.push(dd)
+                  item.Subdirectory.unshift(dd)
                 }else {
                   arr.push(dd)
                   item.Subdirectory = arr
@@ -386,7 +540,7 @@
                   if (!item.hasOwnProperty("slots")){
                     slot.icon='subLeaf'
                     item.slots = slot
-                    item='el-icon-date'
+                    item.icon='el-icon-date'
                   }
                 }
               }
@@ -472,6 +626,75 @@
     .el-card{
       margin-top: 5px;
       height: 100%;
+    }
+  }
+  .rightClickMenu{
+    width: 120px;
+    height: 100px;
+    top: 100px;
+    box-shadow: 2px 1px 5px 1px rgb(149, 149, 149);
+    border-radius: 5px;
+    position: absolute;
+
+    background-color: #fff;
+    z-index: 0;
+    ul{
+      padding-left: 15px;
+      padding-top: 10px;
+    }
+    li{
+      cursor: pointer;
+      line-height: 26px;
+    }
+    li:hover{
+      background-color: rgba(61,131,255,0.17);
+    }
+  }
+  .add-leaf-dialog{
+    .el-form-item{
+      .el-input{
+        width: 70%;
+      }
+      .el-textarea{
+        width: 70%;
+      }
+    }
+
+    ::v-deep{
+      .el-form{
+        margin-left: 0px;
+        .el-form-item__label{
+          text-align: right;
+          width: 120px;
+        }
+      }
+
+    }
+    ::v-deep.el-dialog__body{
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .el-divider:nth-of-type(1){
+      margin-top: 0;
+      margin-bottom: 30px;
+    }
+    .el-divider{
+      margin-top: 40px;
+      margin-bottom: 10px;
+    }
+  }
+  .connect-dialog{
+    ::v-deep.el-dialog__body{
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .el-divider:nth-of-type(1){
+      margin-top: 0;
+      margin-bottom: 30px;
+    }
+    .el-divider{
+      margin-top: 40px;
+      margin-bottom: 10px;
     }
   }
 </style>

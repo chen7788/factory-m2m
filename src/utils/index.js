@@ -155,3 +155,11 @@ export function debounce(func, wait, immediate) {
     return result
   }
 }
+export function formDataWithData(data){
+  let ret = ''
+  for (let it in data) {
+    ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+  }
+  ret = ret.substring(0, ret.lastIndexOf('&'));
+  return ret
+}

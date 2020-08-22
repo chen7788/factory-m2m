@@ -50,7 +50,7 @@
 
       <el-dialog class="dialog-container" title="新增" :visible.sync="dialogVisible" width="60%">
         <el-divider></el-divider>
-        <el-form :rules="rules" v-model="form" label-position="left">
+        <el-form :rules="rules" v-model="form" label-width="100px" label-position="right">
           <el-form-item label="父级菜单：">
             <el-select v-model="selectValue" disabled placeholder="请选择">
               <el-option v-for="item in form.options" :key="item" :label="item" :value="item"/>
@@ -89,23 +89,31 @@
       </el-dialog>
       <el-dialog class="module-dialog-container" title="添加模块" :visible.sync="moduleDialogVisible" width="60%">
         <el-divider></el-divider>
-        <el-form :rules="moduleRules" v-model="moduleForm" label-position="left">
-          <el-form-item label="模块名称：">
-            <el-input v-model="moduleForm.moduleName" placeholder="请输入模块名称"/>
-          </el-form-item>
-          <el-form-item label="API地址：" prop="name">
-            <div class="module-address-container" v-model="moduleForm.apiAddress">
-              <div>
-                <el-input placeholder="请输入模块名称"/>
-                <i class="el-icon-circle-plus-outline" style="color: #20a0ff"/>
-              </div>
-              <div class="module-add-container">
-                <i class="el-icon-circle-plus-outline" style="color: #20a0ff">添加子集</i>
-              </div>
-            </div>
-          </el-form-item>
+                  <el-form :rules="moduleRules" hide-required-asterisk="hideRequiredAsterisk" v-model="moduleForm" label-width="100px" label-position="right">
+                    <el-form-item label="模块名称：">
+                      <el-input v-model="moduleForm.moduleName" placeholder="请输入模块名称"/>
+                    </el-form-item>
+                    <el-form-item label="API地址：" prop="name">
+                      <div class="module-address-container" v-model="moduleForm.apiAddress">
+                          <el-form-item
+                            v-for="(domain, index) in moduleForm.modulesMaps"
+                            :key="domain.key"
+                            :prop="'domains.' + index + '.value'"
+                            :rules="{
+                                required: true, message: '模块名称不能为空', trigger: 'blur'
+                            }">
+                            <el-input v-model="domain.value" placeholder="请输入模块名称"></el-input>
+<!--                            <el-button type="primary" icon="el-icon-delete" circle></el-button>-->
+                            <span class="right-delete-container">
+                            <i class="el-icon-delete" style="color: #20a0ff" @click.prevent="removeModule(domain)"/>
+                          </span>
+                          </el-form-item>
 
-        </el-form>
+                        <el-button icon="el-icon-circle-plus-outline"  @click="addModule">添加</el-button>
+                        </div>
+                    </el-form-item>
+
+                  </el-form>
         <el-divider></el-divider>
         <span slot="footer" class="dialog-footer">
           <el-button @click="moduleDialogVisible = false">取 消</el-button>
@@ -175,8 +183,12 @@
           moduleDialogVisible:false,
           moduleForm:{
             moduleName:'',
-            apiAddress:''
+            apiAddress:'',
+            modulesMaps:[{
+              value:''
+            }],
           },
+          hideRequiredAsterisk:true,
           rules:{
             name:[
               { required: true, message: '请输入活动名称', trigger: 'blur' },
@@ -186,7 +198,8 @@
               { required: true, message: '请输入活动名称', trigger: 'blur' },
               { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
             ],
-            sort:[{ required: true, message: '请输入活动名称', trigger: 'blur' }],
+            sort:[{ required: true, message: '年龄不能为空'},
+              { type: 'number', message: '年龄必须为数字值'}],
             status:[
               { required: true, message: '请输入活动名称', trigger: 'blur' },
             ]
@@ -208,6 +221,18 @@
       }
       ,
       methods:{
+        removeModule(item) {
+          var index = this.moduleForm.modulesMaps.indexOf(item)
+          if (index !== -1) {
+            this.moduleForm.modulesMaps.splice(index, 1)
+          }
+        },
+        addModule() {
+          this.moduleForm.modulesMaps.push({
+            value: '',
+            key: Date.now()
+          })
+        },
         dialogAdd(){
           this.isRightClick = false
           this.moduleDialogVisible = true
@@ -319,20 +344,9 @@
     }
   }
 .dialog-container{
-  ::v-deep{
-    .el-form{
-      margin-left: 30px;
-      .is-required{
-        .el-form-item__label{
-          padding-left: 0px;
-        }
-      }
-      .el-form-item__label{
-        padding-left: 10px;
-        text-align: right;
-      }
-    }
-
+  .el-form{
+    margin-left: 40px;
+    margin-right: 20px;
   }
   ::v-deep.el-dialog__body{
     padding-top: 0;
@@ -343,34 +357,26 @@
     margin-bottom: 30px;
   }
   .el-divider{
-    margin-top: 40px;
+    margin-top: 30px;
     margin-bottom: 10px;
   }
 }
-  .el-form-item{
-    .el-input{
-      width: 80%;
-    }
-
-  }
+  /*.el-form-item{*/
+  /*  .el-input{*/
+  /*    width: 80%;*/
+  /*  }*/
+  /*}*/
   .model-container{
-    width: 78%;
-    padding: 20px;
     border-radius: 5px;
-    margin-right: 30px;
-    float: right;
-    display: flex;
-    align-content: center;
-    justify-content: center;
     border: #97a8be solid 0.5px;
 
     .add-container{
-      display: flex;
-      width: 100%;
-      padding-top: 10px;
+      margin: 20px;
       height: 40px;
+      padding-top: 10px;
       border: #99a9bf dashed 0.5px;
       border-radius: 5px;
+      display: flex;
       align-content: center;
       justify-content: center;
       cursor: pointer;
@@ -385,8 +391,7 @@
   }
   .module-dialog-container{
     .el-form{
-      margin-left: 30px;
-      margin-right: 30px;
+      margin-right: 20px;
     }
     ::v-deep.el-dialog__body{
       padding-top: 0;
@@ -401,9 +406,28 @@
       margin-bottom: 10px;
     }
     .module-address-container{
-      width: 80%;
-      float: right;
-      border: #99a9bf dashed 0.5px;
+      border: #99a9bf solid 0.5px;
+      padding-right: 20px;
+      padding-left: 20px;
+      padding-bottom: 20px;
+      border-radius: 5px;
+      .el-input{
+        margin-top: 20px;
+          width: calc(100% - 30px);
+      }
+
+      .el-button{
+        margin-top: 30px;
+        width: 100%;
+        color: #409EFF;
+        border: #99a9bf dashed 0.5px;
+      }
+
     }
-  }
+    .right-delete-container{
+      float: right;
+      margin-top: 20px;
+      padding-left: 15px;
+    }
+ }
 </style>

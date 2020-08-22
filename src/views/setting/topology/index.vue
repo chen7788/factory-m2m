@@ -125,25 +125,25 @@
       <!--      设备关联-->
       <el-dialog class="connect-dialog" :title="connectDialogTitle" :visible.sync="connectDialogVisible" width="50%">
         <el-divider></el-divider>
-        <el-table ref="multipleTable"
+        <el-table height="500px" ref="multipleTable"
                   :data="tableData"
                   style="width: 100%;margin-bottom: 20px;"
                   row-key="id"
                   border>
           <el-table-column align="center"
-                           prop="name"
-                           label="物业节点名称">
+                           prop="deviceMacAddress"
+                           :label="leftTitle">
           </el-table-column>
           <el-table-column align="center"
-                           prop="device"
-                           label="关联设备">
+                           prop="node"
+                           :label="rightTitle">
           </el-table-column>
 
         </el-table>
         <el-divider></el-divider>
         <span slot="footer" class="dialog-footer">
           <el-button @click="addDialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="addDialogClick">确 定</el-button>
+    <el-button type="primary" @click="addDialogVisible = false">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -195,6 +195,8 @@
           inputDisabled:true,
           connectDialogVisible:false,
           connectDialogTitle:'dfff',
+          leftTitle:'物业节点名称',
+          rightTitle:'关联设备',
           addRules:{
             name:[
               { required: true, message: '请输入活动名称', trigger: 'blur' },
@@ -237,6 +239,25 @@
         this.getAllBinds()
       },
       methods:{
+        handleDevice(){
+          this.leftTitle='设备名称'
+          this.rightTitle = '关联物业节点'
+          let map = new Map()
+          this.allBinds.forEach(item => {
+            if (map.get(item.deviceMacAddress)){
+              let  temp = map.get(item.deviceMacAddress)
+              temp.node = temp.node+'   |    '+item.node
+            }else {
+              map.set(item.deviceMacAddress,item)
+            }
+          })
+          let arr =[]
+          for (let value of map.values()) {
+            arr.push(value)
+          }
+          this.tableData = arr
+          this.connectDialogVisible = true
+        },
         addNode(){
           this.addDialogTitle = '添加物业节点'
           this.addDialogVisible = true
@@ -389,27 +410,34 @@
         handleProperty(){
           let data = this.data.slice()
           let arr = []
-          this.tableData = this.findDialogData(data,arr)
+          this.findDialogData(data,arr)
+          this.tableData = arr
           this.connectDialogVisible = true
         },
         findDialogData(data,arr){
-          debugger
+
           for (let item of data) {
             let model = new  Object()
             if (item.uuid){
-              model.name = item.propertytyName
+              model.deviceMacAddress = item.propertytyName
+              if (item.Subdirectory && item.Subdirectory.length>0){
+                let sub = item.Subdirectory[0]
+                if (sub.deviceMacAddress){
+                  model.node = sub.deviceMacAddress
+                }
+              }
             }else {
               model.name = '',
-                model.device = item.deviceMacAddress
+                model.node = item.deviceMacAddress
             }
             arr.push(model)
             if (item.hasOwnProperty("Subdirectory") && item.Subdirectory.length > 0){
-              this.findDialogData(item.Subdirectory)
+              let sub = item.Subdirectory[0]
+              if (typeof(sub.deviceMacAddress) === "undefined") {
+                this.findDialogData(item.Subdirectory, arr)
+              }
             }
           }
-        },
-        handleDevice(){
-
         },
         //设置解绑按钮状态
         changeUnbindStatus(data){
@@ -496,7 +524,7 @@
 
         getAllBinds(){
           allBinds().then(response => {
-              this.allBinds = response.result
+            this.allBinds = response.result
             this.getLeftTreeData()
             this.getRightTreeData()
           })
@@ -519,12 +547,18 @@
             for (let item of data){
               let slot = Object()
               if (item.uuid === bind.orgId){
+
                 let  arr = []
                 let dd = Object.assign({},bind)
                 dd.propertytyName = dd.deviceMacAddress
                 slot.icon='children'
                 dd.slots = slot
                 dd.icon='el-icon-video-play'
+                if (bind.node){
+                  bind.node = bind.node+'|'+item.propertytyName
+                }else {
+                  bind.node = item.propertytyName
+                }
                 if (item.hasOwnProperty("Subdirectory") && item.Subdirectory.length > 0){
                   item.Subdirectory.unshift(dd)
                 }else {

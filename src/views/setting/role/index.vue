@@ -3,12 +3,12 @@
     <a-tabs default-active-key="1" @change="callback">
       <a-tab-pane key="1" tab="用户管理">
                 <keep-alive>
-                    <component :is="currentTabComponent"/>
+                    <component :is="tab1Component"/>
                 </keep-alive>
       </a-tab-pane>
       <a-tab-pane key="2" tab="配置管理" force-render>
                     <keep-alive>
-                    <component :is="currentTabComponent"/>
+                    <component :is="tab2Component"/>
                     </keep-alive>
       </a-tab-pane>
       <a-tab-pane key="3" tab="角色管理">
@@ -46,11 +46,17 @@
     },
     computed:{
       currentTabComponent(){
-        if (this.tabsModel == 'first'){
+        if (this.tabsModel == '1'){
           return RoleInfo
         }else if (this.tabsModel == 'second'){
          return  PCPermission
         }
+      },
+      tab1Component(){
+        return RoleInfo
+      },
+      tab2Component(){
+        return PCPermission
       }
     },
     methods:{

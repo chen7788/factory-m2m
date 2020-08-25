@@ -13,7 +13,7 @@ const service = axios.create({
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 50000, // request timeout
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',// form-data "application/x-www-form-urlencoded;charset=utf-8"
+    'Content-Type': getContentType(),// form-data "application/x-www-form-urlencoded;charset=utf-8"
   }
 })
 // request interceptor

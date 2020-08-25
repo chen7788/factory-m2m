@@ -48,7 +48,7 @@ export function addNode(name,remark,sort,parent) {
   return request({
     url: '/propertyty/save',
     method: 'post',
-    data:{propertytyName: name, remarks: remark,id,sortNumber:sort,parentNode:parent}
+    data:{propertytyName: name, remarks: remark,sortNumber:sort,parentNode:parent}
   })
 }
 export function upDateNode(name,remark,sort,id,parent) {

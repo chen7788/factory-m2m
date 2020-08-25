@@ -3,9 +3,9 @@
 
       <el-col :span="9">
         <el-card shadow="never" >
-          <div slot="header">
+          <div class="header-container" slot="header">
             <span>物业管理</span>
-            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+            <el-button type="text" @click="addRootLeaf" icon="el-icon-plus">添加节点</el-button>
           </div>
 <!--          <a-tree v-if="data.length>0" :treeData = data  showIcon showLine :replaceFields="replaceFields"  style="height: 100vh" defaultExpandAll>-->
 <!--&lt;!&ndash;            <a-icon slot="leaf" type="caret-right"/>&ndash;&gt;-->
@@ -101,7 +101,7 @@
 <!--      添加子节点-->
       <el-dialog class="add-leaf-dialog" :title="addDialogTitle" :visible.sync="addDialogVisible" width="50%">
         <el-divider></el-divider>
-        <el-form :rules="addRules" v-model="addForm" label-position="left">
+        <el-form :rules="addRules" :model="addForm" label-position="left">
           <el-form-item label="父节点：">
             <el-input v-model="addForm.leaf" :disabled="inputDisabled" placeholder="请输入模块名称"/>
           </el-form-item>
@@ -125,7 +125,7 @@
       <!--      设备关联-->
       <el-dialog class="connect-dialog" :title="connectDialogTitle" :visible.sync="connectDialogVisible" width="50%">
         <el-divider></el-divider>
-        <el-table height="500px" ref="multipleTable"
+        <el-table height="400px" ref="multipleTable"
                   :data="tableData"
                   style="width: 100%;margin-bottom: 20px;"
                   row-key="id"
@@ -142,8 +142,8 @@
         </el-table>
         <el-divider></el-divider>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="addDialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="addDialogVisible = false">确 定</el-button>
+          <el-button @click="connectDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="connectDialogVisible = false">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -194,13 +194,12 @@
           },
           inputDisabled:true,
           connectDialogVisible:false,
-          connectDialogTitle:'dfff',
+          connectDialogTitle:'物业节点设备关联',
           leftTitle:'物业节点名称',
           rightTitle:'关联设备',
           addRules:{
             name:[
               { required: true, message: '请输入活动名称', trigger: 'blur' },
-              { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
             ],
             sort:[{ required: true, message: '请输入活动名称', trigger: 'blur' }],
           }
@@ -239,14 +238,25 @@
         this.getAllBinds()
       },
       methods:{
+        addRootLeaf(){
+          this.addForm.leaf = ''
+          this.addForm.name = ''
+          this.addForm.desc = ''
+          this.addDialogVisible = true
+          this.isRightClick = false
+        },
         handleDevice(){
           this.leftTitle='设备名称'
           this.rightTitle = '关联物业节点'
+          this.connectDialogTitle = '设备关联物业节点'
           let map = new Map()
-          this.allBinds.forEach(item => {
+          let data = [...this.allBinds]
+          data.forEach(item => {
             if (map.get(item.deviceMacAddress)){
               let  temp = map.get(item.deviceMacAddress)
-              temp.node = temp.node+'   |    '+item.node
+              if (!temp.node.includes(item.node)){
+                temp.node = temp.node+'   |    '+item.node
+              }
             }else {
               map.set(item.deviceMacAddress,item)
             }
@@ -265,8 +275,12 @@
           this.addForm.leaf = this.leftClickData.propertytyName
         },
         addDialogClick(){
-          if (this.addForm.leaf === this.leftClickData.propertytyName){
-            addNode(this.addForm.name,this.addForm.desc,this.addForm.sort,this.leftClickData.parentNode).then(response => {
+          if (this.addForm.leaf === '' || this.addForm.leaf === this.leftClickData.propertytyName){
+            let node = ''
+            if (this.addForm.leaf !== ''){
+              node = this.leftClickData.parentNode
+            }
+            addNode(this.addForm.name,this.addForm.desc,this.addForm.sort,node).then(response => {
               this.addDialogVisible = false
               this.$message({
                 message:'添加节点成功',
@@ -333,15 +347,21 @@
           if (data.deviceMacAddress){
             return
           }
+          this.isShowDeleteNode = true
+          if (data.Subdirectory && data.Subdirectory.length === 1){
+            let item = data.Subdirectory[0]
+            if (item.uuid){
+              this.isShowDeleteNode = false
+            }
+          }
           this.isRightClick = true
-          this.$refs.rightClick.style.left = event.x-90 +'px'
+          this.$refs.rightClick.style.left = event.x +'px'
           this.$refs.rightClick.style.top = event.y-80 +'px'
           const boxPosition = this.$refs.rightClick.getBoundingClientRect();
           const boxPositionTop = boxPosition.bottom;
           this.getScreenSize(event,boxPositionTop);
           this.leftClickData = data
           this.addForm.leaf = node.parent.data.propertytyName
-
         },
         handleLeftNodeClick(data,node,obj){
          this.changeUnbindStatus(data)
@@ -432,10 +452,7 @@
             }
             arr.push(model)
             if (item.hasOwnProperty("Subdirectory") && item.Subdirectory.length > 0){
-              let sub = item.Subdirectory[0]
-              if (typeof(sub.deviceMacAddress) === "undefined") {
                 this.findDialogData(item.Subdirectory, arr)
-              }
             }
           }
         },
@@ -579,12 +596,12 @@
                 }
               }
               if (item.hasOwnProperty("Subdirectory") && item.Subdirectory.length > 0){
-                let sub = item.Subdirectory[0]
-                if (!sub.hasOwnProperty('orgId')){
+                //let sub = item.Subdirectory[0]
+                //if (!sub.hasOwnProperty('orgId')){
                   let model = this.traverseLeftTreeData(item.Subdirectory,bind,false)
                   if (typeof(model) !== "undefined" && model !== null){
                     return model
-                  }
+                 // }
                 }
               }
             }
@@ -594,6 +611,18 @@
 </script>
 
 <style lang="scss" scoped>
+  .header-container{
+    height: 30px;
+    .el-button{
+      color: #5a5e66;
+      float: right;
+      padding-top: 7px;
+      height: 30px;
+      width: 100px;
+      border: #5a5e66 solid 1px;
+      border-radius: 2px;
+    }
+  }
   .potology-container{
     height: 100%;
     position: relative;

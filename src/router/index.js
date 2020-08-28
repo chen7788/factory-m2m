@@ -111,7 +111,7 @@ export const asyncRouterMap = [
         meta: {
           title: '菜单管理', icon: 'dashboard',
           noCache: true
-        }
+        },
       }
     ]
   },
@@ -134,9 +134,52 @@ export const asyncRouterMap = [
           title: '客户资料', icon: 'dashboard',
           noCache: true
         }
+      },
+      {
+        path: '/hhh',
+        name: '人力资料',
+        redirect: 'noredirect',
+        component: () => import('@/views/information/staffshift/index'),
+        alwaysShow: true,
+        meta: {
+          title: '人力资料', icon: 'dashboard',
+        },
+        children:[
+          {
+            path: '/staffshift',
+            component: () => import('@/views/information/staffshift/index'),
+            name: '排班资料',
+            meta: {
+              title: '排班资料', icon: 'dashboard',
+              noCache: true
+            }
+          }
+        ]
       }
     ]
   },
+  {
+    path: '/craft',
+    component: Layout,
+    redirect: 'noredirect',
+    alwaysShow: true,
+    name: '制造工艺',
+    meta: {
+      title: '制造工艺',
+      icon: 'dashboard'
+    },
+    children: [
+      {
+        path: 'material',
+        component: () => import('@/views/craft/index'),
+        name: '工艺管理',
+        meta: {
+          title: '工艺管理', icon: 'dashboard',
+          noCache: true
+        }
+      }
+    ]
+  }
 ]
 
 

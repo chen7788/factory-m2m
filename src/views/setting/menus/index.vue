@@ -245,7 +245,8 @@
         addDialogClick(){
           this.$refs.form.validate(valid => {
             if (valid) {
-              debugger
+              console.log(this.selectValue)
+              console.log(this.clickData)
               if (this.selectValue === this.clickData.menuName){
                 menuSave(this.clickData.id,this.form,this.moduleData()).then(response => {
                   this.$message({
@@ -261,7 +262,7 @@
                   // })
                 })
               }else {
-                updateSave(this.clickData.id,this.form,this.moduleData()).then(response => {
+                updateSave(this.clickData.parentId,this.clickData.id,this.form,this.moduleData()).then(response => {
                   this.$message({
                     message:'修改菜单成功',
                     type:'success'
@@ -355,9 +356,17 @@
             this.moduleDialogVisible = false
           this.resetModuleForm()
         },
-        resetModuleForm(){
-          this.moduleForm.moduleName = ''
-          this.moduleForm.modulesMaps = []
+        resetModuleForm(isModule = true){
+          if (isModule){
+            this.moduleForm.moduleName = ''
+            this.moduleForm.modulesMaps = []
+          }else {
+            this.selectValue = ''
+            this.form.name = ''
+            this.form.address = ''
+            this.form.icon = ''
+            this.form.modules = []
+          }
         },
         //添加模块删除框添加事件
         removeModule(item) {
@@ -386,16 +395,32 @@
         },
         //添加
         handleAdd(data){
+          //this.$refs.form.resetFields()
+          this.resetModuleForm(false)
           this.selectValue = data.menuName
           this.clickData = data
           this.dialogVisible = true
         },
+        findNodeName(id,data){
+          for (let model of data) {
+            if (model.id === id) {
+              return model.menuName
+            }
+            if (model.children && model.children.length > 0) {
+              let model = this.findNodeName(id, model.children)
+              if (typeof (model) !== "undefined" && model !== null) {
+                return model
+              }
+            }
+          }
+        },
         //编辑
         handleEdit(data){
+          this.clickData = data
           if (data.parentId === null){
             this.selectValue = '顶级菜单'
           }else {
-            this.selectValue = data.name
+            this.selectValue = this.findNodeName(data.parentId,this.tableData)
           }
             this.form.name = data.menuName
             this.form.address = data.menuLink
@@ -468,7 +493,7 @@
           })
         },
         handlePagination(){
-
+          getMenuList(this.page,this.size)
         }
       }
     }

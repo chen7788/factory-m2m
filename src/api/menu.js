@@ -18,7 +18,7 @@ export function menuSave(id,form,data) {
     data:{'menuIcon':form.icon,'menuLink':form.address,'menuName':form.name,'modulesMaps':data,'parentId':id,'showIndex':form.sort,'state':state}
   })
 }
-export function updateSave(id,form,data) {
+export function updateSave(parentId,id,form,data) {
   setContentType(true)
   if (JSON.stringify(data) === '{}') {
     data = null
@@ -32,6 +32,6 @@ export function updateSave(id,form,data) {
   return request({
     url: 'menu/update',
     method: 'post',
-    data:{'menuIcon':form.icon,'menuLink':form.address,'menuName':form.name,'modulesMaps':data,'parentId':id,'showIndex':form.sort,'state':state}
+    data:{'menuIcon':form.icon,'menuLink':form.address,'menuName':form.name,'modulesMaps':data,'id':id,'parentId':parentId,'showIndex':form.sort,'state':state}
   })
 }

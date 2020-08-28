@@ -23,91 +23,147 @@
             style="width: 100%;margin-bottom: 20px;"
             row-key="id"
             border
+                    v-loading="tableLoading" element-loading-text="正在查询中。。。"
             height="calc(100vh - 270px)"
-            @selection-change="handleSelectionChange"
-                    @select="handleSelection"
                     @select-all="handleSelectionAll"
-                    @expand-change="handleExpandChange"
             :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
-<!--            <el-table-column align="center"-->
-<!--              type="selection"-->
-<!--              width="80">-->
-<!--            </el-table-column>-->
-            <el-table-column type="selection" width="100" align="center">
-              <template #default="scope">
-                <el-checkbox v-model="scope.row.isCheck" @change="handleCheckboxChange($event,scope.row,scope.$index)"></el-checkbox>
-              </template>
-            </el-table-column>
-            <el-table-column align="center" width="180"
-              prop="menuName"
-              label="菜单名称"
-            >
-            </el-table-column>
-            <el-table-column align="center"
-              label="模块">
-            <template #default="scope">
-              <el-checkbox-group v-model="scope.row.checked">
-                <el-checkbox rel="" v-for="key in scope.row.checkList" ref="key.name" :label="key.name" :key="key.name" @change="handleCheckbox($event,scope.row,scope.$index)">{{key.name}}</el-checkbox>
-              </el-checkbox-group>
-            </template>
-            </el-table-column>
-          </el-table>
-          <div style="height: 45px;margin-top: 5px">
-            <pagination :total="total" :page.sync="page" :limit.sync="size" @pagination="handlePagination" layout="prev, pager, next, sizes" background=false />
-            <div align="center" style="float: right;margin-right: 5px;margin-top: 12px;font-size: 15px">
-              {{total | totalFilter(size)}}
-            </div>
-          </div>
-          <el-button type="primary" style="margin-left: 80px;margin-bottom: 20px">确定</el-button>
-        </div>
-      </el-col>
+                                :expand-row-keys="expandKeys"
+<!--                        <el-table-column align="center"-->
+<!--                          type="selection"-->
+<!--                          width="80">even-->
+<!--        </el-table-column>-->
+        <!--            @select="((selection,row)=>{handleSelect(selection,row)})"-->
+        <!--            @select="((selection,row)=>{handleSelect(selection,row,$event)})"-->
+        <el-table-column type="selection" width="100" align="center">
+      <template #default="scope">
+    <el-checkbox v-model="scope.row.isCheck" @change="handleCheckboxChange($event,scope.row)"></el-checkbox>
+    </template>
+    </el-table-column>
+    <el-table-column  width="180" header-align="center"
+  prop="menuName"
+  label="菜单名称"
+    >
+    </el-table-column>
+    <el-table-column header-align="center"
+  label="模块">
+    <template #default="scope">
+    <el-checkbox-group v-model="scope.row.checked">
+    <el-checkbox  v-for="(item,index) in Object.keys(scope.row.modulesMaps)" :label="item" :key="index" @change="handleCheckbox($event,scope.row,scope.$index)"></el-checkbox>
+    </el-checkbox-group>
+    </template>
+    </el-table-column>
+    </el-table>
+    <div style="height: 45px;margin-top: 5px">
+    <pagination :total="total" :page.sync="page" :limit.sync="size" @pagination="handlePagination" layout="prev, pager, next, sizes" background=false />
+    <div align="center" style="float: right;margin-right: 5px;margin-top: 12px;font-size: 15px">
+    {{total | totalFilter(size)}}
+  </div>
+  </div>
+  <el-button type="primary" style="margin-left: 80px;margin-bottom: 20px" @click.prevent="handleClick">确定</el-button>
     </div>
-</template>
+    </el-col>
+    </div>
+    </template>
 
-<script>
-  import { getTree, getMenuList, getMenuPermission} from "@/api/userManger";
+    <script>
+  import { getTree, getMenuList, getMenuPermission, setMenuPermissions} from "@/api/userManger";
   import pagination from '@/components/Pagination'
 
-    export default {
-        name: "PCPermission",
-      components:{
-        pagination
+  export default {
+    name: "PCPermission",
+    components:{
+      pagination
+    },
+    filters:{
+      selectedValueFilter(val){
+        return '已选中 '+val.toString()+' 项'
       },
-      filters:{
-        selectedValueFilter(val){
-          return '已选中 '+val.toString()+' 项'
+      totalFilter(val,value){
+        return '总共 '+val.toString()+' 条记录    '+'共 '+value.toString()+' 页'
+      }
+    },
+    data(){
+      return{
+        treeData: null,
+        defaultProps: {
+          children: 'Subdirectory',
+          label: 'name'
         },
-        totalFilter(val,value){
-          return '总共 '+val.toString()+' 条记录    '+'共 '+value.toString()+' 页'
-        }
-      },
-      data(){
-          return{
-            treeData: null,
-            defaultProps: {
-              children: 'Subdirectory',
-              label: 'name'
-            },
-            treeLoading: true,
-            page:1,
-            size:10,
-            total:0,
-            tableData:[],
-            checkData:{
-              name:'',
-              isChecked:false
-            },
-            tableAllSelect:false
-          }
-      },
-      created() {
-        this.getTreeData()
-      },
-      computed:{
+        treeLoading: true,
+        page:1,
+        size:10,
+        total:0,
+        tableData:[],
+        expandKeys:[],
+        checkData:{
+          name:'',
+          isChecked:false
+        },
+        tableAllSelect:false,
+        tableLoading:false
+      }
+    },
+    created() {
+      this.getTreeData()
+    },
+    computed:{
 
-      },
-      methods:{
-        handleCheckboxChange(isSelected,data,index){
+    },
+    methods:{
+      handleSelect (event,row,) {
+          alert(event)
+          console.log(row)
+        },
+        setSelectRow(selection,row){
+          if(row.children.length > 0){
+            row.children.forEach(item => {
+              this.$refs.table.toggleRowSelection(item)
+              item.checked =  Object.keys(item.modulesMaps)
+              // this.$refs.table.setCurrentRow(item)
+            })
+            // console.log(selection,row.children)
+          }else{
+
+            if (selection.length > 0){
+              console.log(selection,row)
+              row.checkList =  Object.keys(row.modulesMaps)
+            }else if (selection.length === 0) {
+              console.log(selection,row)
+              row.checkList = [];
+            }
+
+          }
+        },
+          handleClick(){
+            let arr = []
+            this.queryParams(this.tableData,arr)
+            setMenuPermissions(arr).then(response => {
+              this.$message({
+                message:'操作成功',
+                type:'success'
+              })
+            })
+          },
+        queryParams(data,arr){
+          for (let item of data) {
+            if (item.isCheck){
+              let obj = new Object()
+              let partent = new Object()
+              if (item.checked && Array.isArray(item.checked)){
+                item.checked.forEach(key => {
+                obj[key] =  item.modulesMaps[key]
+                })
+              }
+            partent['menuId'] = item.id
+              partent['modulesMaps'] = obj
+              arr.push(partent)
+            }
+            if (item.hasOwnProperty("children") && item.children.length>0){
+              this.queryParams(item.children,arr)
+            }
+          }
+        },
+        handleCheckboxChange(isSelected,data){
           let model = [].concat(this.tableData)
           this.findWithId(data,isSelected)
           this.findWithPartenId(model,isSelected,data)
@@ -115,12 +171,17 @@
           this.tableData = model
         },
         setAllSelected(model,isSelected){
-          let isAll =  model.some(item => {
-            return item.isCheck === true
-          })
+          let isAll = false
+            isAll =  model.some(item => {
+              return item.isCheck === true
+            })
           if (isAll){
             this.$nextTick(() => {
-            this.$refs.multipleTable.toggleRowSelection(0,isSelected)
+            this.$refs.multipleTable.toggleRowSelection(0,true)
+            })
+          }else {
+            this.$nextTick(() => {
+              this.$refs.multipleTable.toggleRowSelection(0,false)
             })
           }
         },
@@ -202,14 +263,7 @@
           data.isCheck = isSelected
           if (data.hasOwnProperty("modulesMaps") && Object.keys(data.modulesMaps).length > 0) {
             if (isSelected) {
-              let map = new Map(Object.entries(data.modulesMaps))
-              let keys = []
-              map.forEach((value, key) => {
-                if (key.length > 0) {
-                  keys.push(key)
-                }
-              })
-              data.checked = keys
+              data.checked = Object.keys(data.modulesMaps)
             } else {
               if (data.checked.length > 0) {
                 data.checked = []
@@ -231,16 +285,7 @@
           }
 
         },
-        handleSelectionChange(selection){
-          console.log('handleSelectionChange'+'/'+selection)
-        },
-        handleSelection(selection, row){
-          console.log('handleSelection'+'/'+selection+row.id)
-        },
-        handleExpandChange(row,expanded){
-          console.log('handleExpandChange'+row.id+'/'+expanded)
-        },
-        handleCheckbox(isSelected,data,index){
+        handleCheckbox(isSelected,data){
 
           let model = [].concat(this.tableData)
           if (isSelected){
@@ -259,18 +304,6 @@
             }
           }
         },
-        tableFilter(val){
-          let  keys = []
-          if (Object.keys(val).length !== 0){
-              let map=new Map(Object.entries(val))
-            map.forEach( (value,key) => {
-              if (key.length>0){
-                keys.push(key)
-              }
-            })
-          }
-          return keys
-        },
         handleRefreshRole(){
           this.getTreeData()
         },
@@ -279,7 +312,8 @@
         },
         //组织架构选择树形控件各分支
         handleNodeClick(data){
-          this.menuList();
+          this.tableLoading = true
+          this.menuPermission();
         },
         getTreeData(){
           getTree().then(response => {
@@ -289,41 +323,46 @@
           })
         },
         menuPermission(){
-          getMenuPermission(this.page,this.size).then(response => {
-            this.findNode(response.result.data)
-            this.tableData = response.result.data
-          })
+          getMenuPermission('ff8080817292d6a70173e1493325002f','PC').then(response => {
+            this.menuList(response.result)
+         })
         },
-        menuList(){
+        menuList(data){
           getMenuList(this.page,this.size).then(response => {
-            this.findNode(response.result.data)
-            this.tableData = response.result.data
+            this.tableLoading = false
+            let model = response.result.data
+                this.findNode(model,data)
+            this.tableData = model
+            this.setAllSelected(model,true)
+
           })
         },
-        findNode(data){
-          data.forEach(item => {
-            item["isCheck"]=false
-            if (item.hasOwnProperty("modulesMaps") && Object.keys(item.modulesMaps).length > 0){
-                item["checked"] = []
-              let map=new Map(Object.entries(item.modulesMaps))
-              let keys = []
-              map.forEach( (value,key) => {
-                let model = Object.assign({},this.checkData)
-                if (key.length>0){
-                  model.name = key
-                  model.isChecked = false
+        findNode(data,permissionData){
+          for (let item of data) {
+            item['isCheck'] = false
+            if (item.modulesMaps && JSON.stringify(item.modulesMaps) !== "{}"){
+              item['checked'] = []
+            }
+            let indexs = Object.keys(permissionData)
+            if (indexs.length>0){
+              indexs.some(value => {
+                if (item.id === value){
+                  item['isCheck'] = true
+                  this.expandKeys.push(item.id)
+                  let ddd = permissionData[value]
+                  if (ddd instanceof Object){
+                    item['checked'] = Object.keys(ddd)
+                  }
                 }
-                keys.push(model)
               })
-              item["checkList"] = keys
             }
             if (item.hasOwnProperty("children") && item.children.length>0){
-              let model = this.findNode(item.children)
+              let model = this.findNode(item.children,permissionData)
               if (typeof(model) !== "undefined" && model !== null){
                 return model
               }
             }
-          })
+          }
         }
       }
     }
@@ -342,20 +381,23 @@
   }
   .el-table{
     .el-checkbox{
-      margin-right: 10px;
+      margin-left: 5px;
     }
   }
   ::v-deep {
-    .el-icon-arrow-right:before{
-      content: '+';
-      display: inline-block;
-      margin-right: 3px;
-      width: 16px;
-      height: 16px;
-      line-height: 12px;
-      font-size: 16px;
-      border: 1px solid #999999;
+    .el-table__expand-icon{
+      .el-icon-arrow-right:before{
+        content: '+';
+        display: inline-block;
+        margin-right: 3px;
+        width: 16px;
+        height: 16px;
+        line-height: 12px;
+        font-size: 16px;
+        border: 1px solid #999999;
+      }
     }
+
     .el-table__expand-icon--expanded{
       -webkit-transform: rotate(0deg);
       transform: rotate(0deg);

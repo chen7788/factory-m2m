@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.2.2",
+    "@oxoyo/xfc": "^3.0.2",
     "@xunlei/vue-context-menu": "^1.0.2",
     "ant-design-vue": "^1.6.4",
     "axios": "0.18.1",

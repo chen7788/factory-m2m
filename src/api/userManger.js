@@ -1,5 +1,6 @@
 import request from '@/utils/request'
 import de from "element-ui/src/locale/lang/de";
+import {setContentType} from "@/utils/auth";
 
 export function getTree() {
   return request({
@@ -70,5 +71,14 @@ export function getMenuPermission(roleId,type) {
     url: '/rolePermissions/getMenuPermissions',
     method: 'get',
     params:{'roleId':roleId,'menuType':type}
+  })
+}
+
+export function setMenuPermissions(data) {
+  setContentType(true)
+  return request({
+    url: '/rolePermissions/setMenuPermissions/ff8080817292d6a70173e1493325002f',
+    method: 'post',
+    data:data
   })
 }

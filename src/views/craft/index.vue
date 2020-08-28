@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="!isAdd" >
       <div class="header-container">
         <el-button icon="el-icon-plus" style="margin-left: 15px" @click.prevent="handleAdd">新增</el-button>
         <el-button icon="el-icon-edit" style="margin-left: 15px">修改</el-button>
@@ -32,14 +32,19 @@
         </div>
       </div>
     </div>
+  <div v-else>
+    <add-craft/>
+  </div>
 </template>
 
 <script>
   import {getList} from "@/api/craft";
   import pagination from '@/components/Pagination'
+  import addCraft from "@/views/craft/addCraft";
   export default {
     components:{
-      pagination
+      pagination,
+      addCraft
     },
     data(){
       return{
@@ -48,7 +53,8 @@
         total:0,
         page:1,
         limit:20,
-        selectedValue:0
+        selectedValue:0,
+        isAdd:false
       }
     },
     filters:{
@@ -70,7 +76,7 @@
     },
     methods:{
       handleAdd(){
-
+        this.isAdd = true
       },
       listData(){
         getList(this.page,this.limit).then(response => {

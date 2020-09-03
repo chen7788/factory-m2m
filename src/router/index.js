@@ -177,6 +177,19 @@ export const asyncRouterMap = [
           title: '工艺管理', icon: 'dashboard',
           noCache: true
         }
+
+      },
+      {
+        path: 'process',
+        component: () => import('@/views/craft/addCraft'),
+        name: '添加',
+        alwaysShow: false,
+        hidden:true,
+        meta: {
+          title: '添加', icon: 'dashboard',
+          noCache: true
+        }
+
       }
     ]
   }

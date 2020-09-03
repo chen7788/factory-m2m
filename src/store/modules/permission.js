@@ -82,7 +82,6 @@ function filterAsyncRouter(routes, perms) {
         res.push(tmp)
       }
     } else {
-      debugger
       if (hasPermission(perms, tmp)) {
         res.push(tmp)
       }

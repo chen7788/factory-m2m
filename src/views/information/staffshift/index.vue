@@ -120,8 +120,7 @@
        getdays(){
          let date = new Date()
          let day = date.getDate()
-         date.setDate(0)
-         let day2 = date.getDate()
+         let day2 = this.getMonthCountDay(date.getFullYear(),date.getMonth())
          let arr = []
          for (let i = day; i <=day2; i++) {
            date.setDate(i)
@@ -158,6 +157,10 @@
       }
     },
     methods:{
+      getMonthCountDay(year, month) {
+        let days = new Date(year, month + 1, 0).getDate()
+        return days
+      },
           leftTree(){
             getTree().then(response => {
               this.treeLoading = false

@@ -10,6 +10,7 @@ import '@/styles/index.scss' // global css
 import App from './App'
 import store from './store'
 import router from './router'
+import G6Editor from '@/editor/components/G6Editor'
 
 import '@/icons' // icon
 import 'ant-design-vue/dist/antd.css';
@@ -34,6 +35,7 @@ if (process.env.NODE_ENV === 'production') {
  Vue.use(ElementUI)
 Vue.use(Tree)
 Vue.component(Icon.name,Icon)
+Vue.component(G6Editor.name,G6Editor)
 Vue.use(Tabs)
 Vue.config.productionTip = false
 

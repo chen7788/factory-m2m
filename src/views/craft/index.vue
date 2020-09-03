@@ -76,7 +76,8 @@
     },
     methods:{
       handleAdd(){
-        this.isAdd = true
+        this.$router.push('/craft/process')
+        //this.isAdd = true
       },
       listData(){
         getList(this.page,this.limit).then(response => {

@@ -19,7 +19,7 @@
     "@oxoyo/xfc": "^3.0.2",
     "@xunlei/vue-context-menu": "^1.0.2",
     "ant-design-vue": "^1.6.4",
-    "axios": "0.18.1",
+    "axios": "1.6.0",
     "core-js": "3.6.5",
     "echarts": "^4.8.0",
     "element-ui": "2.13.2",
